@@ -1,145 +1,159 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>marat — bash — 80×24</title>
+  <meta charset="UTF-8">
+  <title>Визитка в терминале</title>
   <style>
     body {
-      background-color: #f0f0f0;
-      font-family: Menlo, Monaco, "Courier New", monospace;
-      margin: 0;
-      padding: 2em;
+      background-color: #bcdffb;
       display: flex;
       justify-content: center;
-    }
-
-    .terminal-wrapper {
-      border-radius: 8px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-      overflow: hidden;
-      max-width: 800px;
-      width: 100%;
-    }
-
-    .terminal-bar {
-      background-color: #ddd;
-      padding: 0.5em;
-      display: flex;
       align-items: center;
-      position: relative;
-    }
-
-    .buttons {
-      display: flex;
-      gap: 0.4em;
-    }
-
-    .buttons span {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      display: inline-block;
-    }
-
-    .close { background-color: #ff5f56; }
-    .minimize { background-color: #ffbd2e; }
-    .zoom { background-color: #27c93f; }
-
-    .title {
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 0.9em;
-      color: #333;
-      font-weight: 500;
+      height: 100vh;
+      font-family: monospace;
+      margin: 0;
     }
 
     .terminal {
-      background-color: #cce7f5;
-      color: #000;
-      font-size: 14px;
-      padding: 1.2em;
+      background-color: #f5f5f5;
+      width: 800px;
+      height: 500px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .terminal-header {
+      background-color: #e0e0e0;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      position: relative;
+    }
+
+    .terminal-header .buttons {
+      display: flex;
+      gap: 7px;
+    }
+
+    .terminal-header .button {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .red { background-color: #ff5f56; }
+    .yellow { background-color: #ffbd2e; }
+    .green { background-color: #27c93f; }
+
+    .terminal-header .title {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      color: #555;
+    }
+
+    .terminal-body {
+      padding: 20px;
       white-space: pre-wrap;
-      line-height: 1.4;
+      color: #222;
+      font-size: 16px;
+      overflow-y: auto;
     }
 
-    .line::after {
-      content: "_";
-      animation: blink 1s infinite;
+    .terminal-line {
+      display: flex;
     }
 
-    .line.done::after {
-      content: "";
-      animation: none;
+    .line {
+      white-space: pre;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 10px;
+      animation: blink 1s step-start infinite;
     }
 
     @keyframes blink {
-      0% { opacity: 1; }
       50% { opacity: 0; }
-      100% { opacity: 1; }
     }
   </style>
 </head>
 <body>
-  <div class="terminal-wrapper">
-    <div class="terminal-bar">
+  <div class="terminal">
+    <div class="terminal-header">
       <div class="buttons">
-        <span class="close"></span>
-        <span class="minimize"></span>
-        <span class="zoom"></span>
+        <div class="button red"></div>
+        <div class="button yellow"></div>
+        <div class="button green"></div>
       </div>
       <div class="title">marat — bash — 80×24</div>
     </div>
-    <div class="terminal" id="terminal">
-      <div class="line" id="login-line"></div>
-    </div>
+    <div class="terminal-body" id="terminal"></div>
   </div>
 
   <script>
-    const terminal = document.getElementById('terminal');
-    const loginLine = document.getElementById('login-line');
-
-    const now = new Date();
-    const dateStr = now.toString().split(' ').slice(0, 5).join(' ');
-    loginLine.textContent = `Last login: ${dateStr} on ttys000`;
-    loginLine.classList.add('done');
+    const terminal = document.getElementById("terminal");
 
     const lines = [
-      "> Привет! Меня зовут Марат.",
-      "> Мне ближе всего командная строка — там я чувствую контроль и чистоту процесса.",
-      "> Вдохновляюсь Linux, Ruby и философией open source.",
-      "> Создаю веб-приложения на Ruby on Rails.",
-      "> Обожаю простоту, ясность и красивый код.",
-      "> Готов участвовать в интересных проектах.",
-      "> Добро пожаловать в мои репозитории!"
+      "echo Привет! Меня зовут Марат.",
+      "echo Мне ближе всего командная строка — здесь я чувствую контроль и чистоту процесса.",
+      "echo Создаю веб-приложения на Ruby on Rails.",
+      "echo С удовольствием поучаствую в вашем проекте.",
+      "echo Если вы ищете разработчика — напишите мне.",
+      "echo Вместе мы создадим что-то классное!",
+      "Нажмите Enter, чтобы перейти к моим репозиториям."
     ];
 
-    let index = 0;
-
-    function typeNextLine() {
+    function typeLine(index) {
       if (index >= lines.length) return;
 
-      const line = document.createElement('div');
-      line.className = 'line';
-      terminal.appendChild(line);
+      const lineContainer = document.createElement("div");
+      lineContainer.classList.add("terminal-line");
+
+      const prompt = document.createElement("span");
+      prompt.textContent = "$ ";
+
+      const line = document.createElement("span");
+      line.classList.add("line");
+
+      const cursor = document.createElement("span");
+      cursor.classList.add("cursor");
+      cursor.textContent = "_";
+
+      lineContainer.appendChild(prompt);
+      lineContainer.appendChild(line);
+      lineContainer.appendChild(cursor);
+      terminal.appendChild(lineContainer);
 
       let charIndex = 0;
-      const text = lines[index];
-
-      const typer = setInterval(() => {
-        line.textContent = text.slice(0, charIndex + 1);
-        charIndex++;
-        if (charIndex === text.length) {
-          clearInterval(typer);
-          line.classList.add('done');
-          index++;
-          setTimeout(typeNextLine, 300);
+      const typeChar = () => {
+        if (charIndex < lines[index].length) {
+          line.textContent += lines[index][charIndex++];
+          setTimeout(typeChar, 40);
+        } else {
+          cursor.remove(); // удалить мигающий курсор после строки
+          if (index === lines.length - 1) {
+            // Добавить слушатель на Enter
+            document.addEventListener("keydown", function handleEnter(e) {
+              if (e.key === "Enter") {
+                window.location.href = "https://github.com/xm14?tab=repositories";
+              }
+            });
+          }
+          setTimeout(() => typeLine(index + 1), 300);
         }
-      }, 30);
+      };
+
+      typeChar();
     }
 
-    setTimeout(typeNextLine, 500);
+    typeLine(0);
   </script>
 </body>
 </html>
