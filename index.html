@@ -51,29 +51,41 @@
 
     let lineIndex = 0;
 
-    function typeLine(text, callback) {
-      let i = 0;
-      const line = document.createElement('div');
-      line.className = 'line';
-      terminal.appendChild(line);
+  function typeLine(text, callback) {
+    let i = 0;
 
-      const typer = setInterval(() => {
-        line.textContent = text.slice(0, i++);
-        if (i > text.length) {
-          clearInterval(typer);
-          line.classList.remove('line'); // убрать курсор после строки
-          setTimeout(callback, 300);
+    // Удаляем старый курсор
+    const prevCursor = document.querySelector('.line');
+    if (prevCursor) prevCursor.classList.remove('line');
+
+    const line = document.createElement('div');
+    line.className = 'line';
+    terminal.appendChild(line);
+
+    const typer = setInterval(() => {
+      line.textContent = text.slice(0, i++);
+      if (i > text.length) {
+        clearInterval(typer);
+
+        // Только последняя строка сохраняет курсор
+        if (lineIndex === lines.length) {
+          // курсор остаётся
+        } else {
+          line.classList.remove('line');
         }
-      }, 30);
-    }
 
-    function printNextLine() {
-      if (lineIndex < lines.length) {
-        typeLine(lines[lineIndex++], printNextLine);
+        setTimeout(callback, 300);
       }
-    }
+    }, 30);
+  }
 
-    printNextLine();
-  </script>
+  function printNextLine() {
+    if (lineIndex < lines.length) {
+      typeLine(lines[lineIndex++], printNextLine);
+    }
+  }
+
+  printNextLine();
+</script>
 </body>
 </html>
