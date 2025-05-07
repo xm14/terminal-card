@@ -21,6 +21,7 @@
       font-size: 1.2em;
       line-height: 1.6;
       min-height: 300px;
+      white-space: pre-wrap;
     }
 
     .line::after {
@@ -60,9 +61,10 @@
         line.textContent = text.slice(0, i++);
         if (i > text.length) {
           clearInterval(typer);
-          setTimeout(callback, 300); // небольшая пауза между строками
+          line.classList.remove('line'); // убрать курсор после строки
+          setTimeout(callback, 300);
         }
-      }, 30); // скорость печати
+      }, 30);
     }
 
     function printNextLine() {
