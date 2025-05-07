@@ -1,105 +1,110 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Визитка в терминале</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>marat — bash — 80×24</title>
   <style>
     body {
-      background-color: #dff6fd;
-      color: #000;
-      font-family: 'Courier New', monospace;
-      padding: 2em;
+      background-color: #f0f0f0;
+      font-family: Menlo, Monaco, "Courier New", monospace;
       margin: 0;
+      padding: 2em;
       display: flex;
       justify-content: center;
-      align-items: center;
-      height: 100vh;
-      flex-direction: column;
     }
 
     .terminal-wrapper {
-      width: 700px;
-      background: #e7f9ff;
-      border-radius: 10px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
       overflow: hidden;
+      max-width: 800px;
+      width: 100%;
     }
 
-    /* Верхняя панель как в терминале macOS */
-    .terminal-header {
+    .terminal-bar {
+      background-color: #ddd;
+      padding: 0.5em;
       display: flex;
-      justify-content: flex-start;
       align-items: center;
-      background-color: #333;
-      color: white;
-      padding: 5px;
+      position: relative;
     }
 
-    .terminal-header div {
-      width: 15px;
-      height: 15px;
-      margin-right: 10px;
+    .buttons {
+      display: flex;
+      gap: 0.4em;
+    }
+
+    .buttons span {
+      width: 12px;
+      height: 12px;
       border-radius: 50%;
-      cursor: pointer;
+      display: inline-block;
     }
 
-    .red {
-      background-color: #ff5f57;
+    .close { background-color: #ff5f56; }
+    .minimize { background-color: #ffbd2e; }
+    .zoom { background-color: #27c93f; }
+
+    .title {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.9em;
+      color: #333;
+      font-weight: 500;
     }
 
-    .yellow {
-      background-color: #ffbd2e;
-    }
-
-    .green {
-      background-color: #27c93f;
-    }
-
-    /* Контейнер для текста терминала */
     .terminal {
-      background: #e7f9ff;
-      padding: 20px;
-      font-size: 1.2em;
-      line-height: 1.6;
-      min-height: 300px;
+      background-color: #cce7f5;
+      color: #000;
+      font-size: 14px;
+      padding: 1.2em;
       white-space: pre-wrap;
-      border-top: 1px solid #ccc;
+      line-height: 1.4;
     }
 
     .line::after {
       content: "_";
-      animation: blink 0.8s step-start infinite;
+      animation: blink 1s infinite;
+    }
+
+    .line.done::after {
+      content: "";
+      animation: none;
     }
 
     @keyframes blink {
+      0% { opacity: 1; }
       50% { opacity: 0; }
-    }
-
-    /* Стили для текста в терминале */
-    .line {
-      font-family: 'Courier New', monospace;
-    }
-
-    .line span {
-      color: #1e1e1e;
+      100% { opacity: 1; }
     }
   </style>
 </head>
 <body>
   <div class="terminal-wrapper">
-    <!-- Верхняя панель терминала -->
-    <div class="terminal-header">
-      <div class="red"></div>
-      <div class="yellow"></div>
-      <div class="green"></div>
+    <div class="terminal-bar">
+      <div class="buttons">
+        <span class="close"></span>
+        <span class="minimize"></span>
+        <span class="zoom"></span>
+      </div>
+      <div class="title">marat — bash — 80×24</div>
     </div>
-
-    <!-- Контейнер для терминала -->
-    <div class="terminal" id="terminal"></div>
+    <div class="terminal" id="terminal">
+      <div class="line" id="login-line"></div>
+    </div>
   </div>
 
   <script>
     const terminal = document.getElementById('terminal');
+    const loginLine = document.getElementById('login-line');
+
+    const now = new Date();
+    const dateStr = now.toString().split(' ').slice(0, 5).join(' ');
+    loginLine.textContent = `Last login: ${dateStr} on ttys000`;
+    loginLine.classList.add('done');
+
     const lines = [
       "> Привет! Меня зовут Марат.",
       "> Мне ближе всего командная строка — там я чувствую контроль и чистоту процесса.",
@@ -110,49 +115,31 @@
       "> Добро пожаловать в мои репозитории!"
     ];
 
-    let lineIndex = 0;
+    let index = 0;
 
-    function typeLine(text, callback) {
-      let i = 0;
-
-      // Удаляем старый курсор
-      const prevCursor = document.querySelector('.line');
-      if (prevCursor) prevCursor.classList.remove('line');
+    function typeNextLine() {
+      if (index >= lines.length) return;
 
       const line = document.createElement('div');
       line.className = 'line';
-
-      // Префикс, как в терминале macOS
-      const prompt = document.createElement('span');
-      prompt.style.color = '#555';
-      prompt.textContent = "marat@macbook-pro ~ % ";
-      line.appendChild(prompt);
-
-      const content = document.createElement('span');
-      line.appendChild(content);
       terminal.appendChild(line);
 
+      let charIndex = 0;
+      const text = lines[index];
+
       const typer = setInterval(() => {
-        content.textContent = text.slice(0, i++);
-        if (i > text.length) {
+        line.textContent = text.slice(0, charIndex + 1);
+        charIndex++;
+        if (charIndex === text.length) {
           clearInterval(typer);
-          if (lineIndex === lines.length) {
-            // курсор остаётся
-          } else {
-            line.classList.remove('line');
-          }
-          setTimeout(callback, 300);
+          line.classList.add('done');
+          index++;
+          setTimeout(typeNextLine, 300);
         }
       }, 30);
     }
 
-    function printNextLine() {
-      if (lineIndex < lines.length) {
-        typeLine(lines[lineIndex++], printNextLine);
-      }
-    }
-
-    printNextLine();
+    setTimeout(typeNextLine, 500);
   </script>
 </body>
 </html>
