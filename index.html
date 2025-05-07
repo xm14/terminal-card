@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>визитка в терминале</title>
+  <title>Визитка в терминале</title>
   <style>
     body {
       background-color: #dff6fd;
@@ -20,34 +20,58 @@
       box-shadow: 0 0 20px rgba(0,0,0,0.1);
       font-size: 1.2em;
       line-height: 1.6;
+      min-height: 300px;
     }
 
-    .line {
-      opacity: 0;
-      animation: showLine 1s forwards;
+    .line::after {
+      content: "_";
+      animation: blink 0.8s step-start infinite;
     }
 
-    @keyframes showLine {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+    @keyframes blink {
+      50% { opacity: 0; }
     }
   </style>
 </head>
 <body>
-  <div class="terminal">
-    <div class="line" style="animation-delay: 0s;">> Привет! Меня зовут Марат.</div>
-    <div class="line" style="animation-delay: 1s;">> Я люблю работать в командной строке.</div>
-    <div class="line" style="animation-delay: 2s;">> Вдохновляюсь Linux, Ruby и философией open source.</div>
-    <div class="line" style="animation-delay: 3s;">> Создаю веб-приложения на Ruby on Rails.</div>
-    <div class="line" style="animation-delay: 4s;">> Обожаю простоту, ясность и красивый код.</div>
-    <div class="line" style="animation-delay: 5s;">> Готов участвовать в интересных проектах.</div>
-    <div class="line" style="animation-delay: 6s;">> Добро пожаловать в мои репозитории!</div>
-  </div>
+  <div class="terminal" id="terminal"></div>
+
   <script>
-    const lines = document.querySelectorAll('.line');
-    lines.forEach(line => {
-      line.style.animation = `showLine 0.6s ease forwards`;
-    });
+    const terminal = document.getElementById('terminal');
+    const lines = [
+      "> Привет! Меня зовут Марат.",
+      "> Мне ближе всего командная строка — там я чувствую контроль и чистоту процесса.",
+      "> Вдохновляюсь Linux, Ruby и философией open source.",
+      "> Создаю веб-приложения на Ruby on Rails.",
+      "> Обожаю простоту, ясность и красивый код.",
+      "> Готов участвовать в интересных проектах.",
+      "> Добро пожаловать в мои репозитории!"
+    ];
+
+    let lineIndex = 0;
+
+    function typeLine(text, callback) {
+      let i = 0;
+      const line = document.createElement('div');
+      line.className = 'line';
+      terminal.appendChild(line);
+
+      const typer = setInterval(() => {
+        line.textContent = text.slice(0, i++);
+        if (i > text.length) {
+          clearInterval(typer);
+          setTimeout(callback, 300); // небольшая пауза между строками
+        }
+      }, 30); // скорость печати
+    }
+
+    function printNextLine() {
+      if (lineIndex < lines.length) {
+        typeLine(lines[lineIndex++], printNextLine);
+      }
+    }
+
+    printNextLine();
   </script>
 </body>
 </html>
