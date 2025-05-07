@@ -9,19 +9,61 @@
       color: #000;
       font-family: 'Courier New', monospace;
       padding: 2em;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
     }
 
-    .terminal {
-      max-width: 700px;
-      margin: 0 auto;
+    .terminal-wrapper {
+      width: 700px;
       background: #e7f9ff;
-      padding: 2em;
       border-radius: 10px;
       box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+
+    /* Верхняя панель как в терминале macOS */
+    .terminal-header {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      background-color: #333;
+      color: white;
+      padding: 5px;
+    }
+
+    .terminal-header div {
+      width: 15px;
+      height: 15px;
+      margin-right: 10px;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .red {
+      background-color: #ff5f57;
+    }
+
+    .yellow {
+      background-color: #ffbd2e;
+    }
+
+    .green {
+      background-color: #27c93f;
+    }
+
+    /* Контейнер для текста терминала */
+    .terminal {
+      background: #e7f9ff;
+      padding: 20px;
       font-size: 1.2em;
       line-height: 1.6;
       min-height: 300px;
       white-space: pre-wrap;
+      border-top: 1px solid #ccc;
     }
 
     .line::after {
@@ -32,10 +74,29 @@
     @keyframes blink {
       50% { opacity: 0; }
     }
+
+    /* Стили для текста в терминале */
+    .line {
+      font-family: 'Courier New', monospace;
+    }
+
+    .line span {
+      color: #1e1e1e;
+    }
   </style>
 </head>
 <body>
-  <div class="terminal" id="terminal"></div>
+  <div class="terminal-wrapper">
+    <!-- Верхняя панель терминала -->
+    <div class="terminal-header">
+      <div class="red"></div>
+      <div class="yellow"></div>
+      <div class="green"></div>
+    </div>
+
+    <!-- Контейнер для терминала -->
+    <div class="terminal" id="terminal"></div>
+  </div>
 
   <script>
     const terminal = document.getElementById('terminal');
@@ -51,41 +112,47 @@
 
     let lineIndex = 0;
 
-  function typeLine(text, callback) {
-    let i = 0;
+    function typeLine(text, callback) {
+      let i = 0;
 
-    // Удаляем старый курсор
-    const prevCursor = document.querySelector('.line');
-    if (prevCursor) prevCursor.classList.remove('line');
+      // Удаляем старый курсор
+      const prevCursor = document.querySelector('.line');
+      if (prevCursor) prevCursor.classList.remove('line');
 
-    const line = document.createElement('div');
-    line.className = 'line';
-    terminal.appendChild(line);
+      const line = document.createElement('div');
+      line.className = 'line';
 
-    const typer = setInterval(() => {
-      line.textContent = text.slice(0, i++);
-      if (i > text.length) {
-        clearInterval(typer);
+      // Префикс, как в терминале macOS
+      const prompt = document.createElement('span');
+      prompt.style.color = '#555';
+      prompt.textContent = "marat@macbook-pro ~ % ";
+      line.appendChild(prompt);
 
-        // Только последняя строка сохраняет курсор
-        if (lineIndex === lines.length) {
-          // курсор остаётся
-        } else {
-          line.classList.remove('line');
+      const content = document.createElement('span');
+      line.appendChild(content);
+      terminal.appendChild(line);
+
+      const typer = setInterval(() => {
+        content.textContent = text.slice(0, i++);
+        if (i > text.length) {
+          clearInterval(typer);
+          if (lineIndex === lines.length) {
+            // курсор остаётся
+          } else {
+            line.classList.remove('line');
+          }
+          setTimeout(callback, 300);
         }
-
-        setTimeout(callback, 300);
-      }
-    }, 30);
-  }
-
-  function printNextLine() {
-    if (lineIndex < lines.length) {
-      typeLine(lines[lineIndex++], printNextLine);
+      }, 30);
     }
-  }
 
-  printNextLine();
-</script>
+    function printNextLine() {
+      if (lineIndex < lines.length) {
+        typeLine(lines[lineIndex++], printNextLine);
+      }
+    }
+
+    printNextLine();
+  </script>
 </body>
 </html>
